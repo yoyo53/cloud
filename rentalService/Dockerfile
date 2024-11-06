@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim AS build
+FROM openjdk:17-alpine AS build
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY . .
 
 RUN ./gradlew build
 
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17-alpine
 
 COPY --from=build /app/build/libs/*.jar /app/app.jar
 
