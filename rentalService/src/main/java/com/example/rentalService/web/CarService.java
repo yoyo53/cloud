@@ -2,6 +2,7 @@ package com.example.rentalService.web;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.ArrayList;
@@ -41,36 +42,38 @@ public class CarService {
     @GetMapping("/cars/{plateNumber}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Car getCar(@PathVariable String plateNumber) {
+    public ResponseEntity<?> getCar(@PathVariable String plateNumber) {
         for (Car car : cars) {
             if (car.getPlateNumber().equals(plateNumber)) {
-                return car;
+                return new ResponseEntity<>(car, HttpStatus.OK);
             }
         }
-        return null;
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("/cars/{plateNumber}")
-    @ResponseStatus(HttpStatus.OK)
-    public void rentCar(@PathVariable String plateNumber, @RequestParam(value="rent", required=true) boolean rent, @RequestBody(required=false) Date dates) {
+    public ResponseEntity<?> rentCar(@PathVariable String plateNumber, @RequestParam(value="rent", required=true) boolean rent, @RequestBody(required=false) Date dates) {
         for (Car car : cars) {
             if (car.getPlateNumber().equals(plateNumber)) {
                 if (rent) {
-                    if (!car.isRented()) {
+                    if (!car.isRented() && dates != null && dates.getBegin() != null && dates.getEnd() != null) {
                         car.addRental(new Rental(dates.getBegin(), dates.getEnd(), true));
+                        return new ResponseEntity<>(null, HttpStatus.OK);
                     }
                     else {
-                        throw new IllegalArgumentException("Car is already rented");
+                        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
                     }
                 } else {
                     if (car.isRented()) {
                         car.getActiveRental().setActive(false);
+                        return new ResponseEntity<>(null, HttpStatus.OK);
                     }
                     else {
-                        throw new IllegalArgumentException("Car is not rented");
+                        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
                     }
                 }
             }
         }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 }
