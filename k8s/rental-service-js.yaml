@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rental-service-js
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rental-service-js
+  template:
+    metadata:
+      labels:
+        app: rental-service-js
+    spec:
+      containers:
+        - image: ghcr.io/yoyo53/rental-service-js:latest
+          imagePullPolicy: IfNotPresent
+          name: rental-service-js
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rental-service-js
+  name: rental-service-js
+spec:
+  ports:
+    - nodePort: 30081
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: rental-service-js
+  type: LoadBalancer
